@@ -1,0 +1,4 @@
+lxml
+halo
+pynmea2
+gpxplotter
