@@ -1,0 +1,12 @@
+>>>line 251
+#
+_rng = time.max() + 1
+if np.isnan(spline(time)).any():
+    _distance = [0] * (_rng)
+for i,val in enumerate(distance):
+    _distance[ time[i] ] += val
+_time = np.array(range(_rng))
+_distance = np.array(_distance)
+spline = UnivariateSpline(_time, _distance, k=3)
+#
+<<<
