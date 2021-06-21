@@ -10,6 +10,7 @@ Install the runtime dependency
 
 Install the video plot dependency
 ```bash
+    pip3 install ./trackanimation-1.0.5-py2.py3-none-any.whl
     sudo apt install ffmpeg
 ```
 
