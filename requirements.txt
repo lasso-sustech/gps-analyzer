@@ -1,4 +1,5 @@
 lxml
 halo
 pynmea2
-gpxplotter
+# gpxplotter
+trackanimation
