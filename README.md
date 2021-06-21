@@ -16,7 +16,7 @@ Install the video plot dependency
 
 ### Convert Raw GSP Data
 
-1. put raw data files with extension `*.log` in `./logs` folder ("");
+1. put raw data files with extension `*.log` in `./logs` folder;
 
 2. run `python3 ./log2gpx.py`, and the `*.gpx` files are generated correspondingly in `./gpx` folder.
 > Run `python3 ./log2gpx.py 2>/dev/null` to disable the WARNING message
