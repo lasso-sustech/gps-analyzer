@@ -7,7 +7,7 @@ import pynmea2
 from pynmea2.types.talker import ZDA, GGA
 import lxml.etree as ET
 
-GPX_DIR = Path('./gpx')
+GPX_DIR = Path('./gpx'); GPX_DIR.mkdir(exist_ok=True)
 FILTER=re.compile('(\$GPZDA,).*|(\$GPGGA,).*')
 logger = logging.getLogger()
 
@@ -29,10 +29,15 @@ for _file in log_files:
             last_qual = None
             for idx,line in enumerate(fh.readlines()):
                 if not FILTER.match(line):
-                    break #EOF
+                    last_time = None
+                    continue
+                #
                 _obj = pynmea2.parse(line)
                 if isinstance(_obj, ZDA):
-                    last_time = _obj.datetime.isoformat()
+                    try:
+                        last_time = _obj.datetime.isoformat()
+                    except:
+                        last_time = None #parse error
                 elif isinstance(_obj, GGA):
                     _lat, _lon, _ele = _obj.latitude, _obj.longitude, _obj.altitude
                     if _lat is None or _lon is None or _ele is None:
@@ -58,7 +63,9 @@ for _file in log_files:
                             pass
                         last_qual = this_qual
                     last_time = None
-                    pass
+                else:
+                    assert(False)
+                pass
             pass
         # write to gpx file
         root_tree = ET.ElementTree(root)
