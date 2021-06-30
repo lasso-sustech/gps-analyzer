@@ -17,12 +17,19 @@
 ### Build
 
 ```bash
-cd sync_read; cargo build
+cd sync_read; cargo build --release
 ```
 
 ### Run
 
 ```bash
-cargo run
+cd sync_read; cargo run
+```
+
+### Test
+
+```bash
+# Run two tests at same time: read_gpio + read_gps
+cargo test -- --nocapture
 ```
 
