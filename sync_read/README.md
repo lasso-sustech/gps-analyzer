@@ -20,6 +20,32 @@
 cd sync_read; cargo build --release
 ```
 
+**cross compiling for Raspberry Pi**:
+
+- add `armhf` architecture by
+
+  ```bash
+  sudo nano /etc/apt/source.list.d/ubuntu-ports.list
+  ```
+
+  and paste the following content
+
+  ```
+  deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports focal main universe
+  deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports focal-updates main universe
+  ```
+
+  Then run the following commands one-by-one:
+
+  ```bash
+  sudo dpkg --add-architecture armhf
+  sudo apt update
+  sudo apt install libudev-dev:armhf
+  sudo apt install gcc-arm-linux-gnueabihf
+  ```
+
+- Run `./cross-compile.sh`, and the binary file is in `target/armv7-unknown-linux-gnueabihf/release`
+
 ### Run
 
 ```bash
