@@ -35,7 +35,8 @@ fn gps_recv(tx : mpsc::Sender<String>) {
 fn file_writer(rx : mpsc::Receiver<String>) {
     let timer = time::Instant::now();
     let count = Path::new("./logs/").iter().count();
-    let file_name = format!("gps-{}.log", count);
+    println!("{}", count);
+    let file_name = format!("./logs/gps-{:02}.log", count);
     let mut file = File::create(file_name).unwrap();
     let timeout = time::Duration::from_millis(1000);
 
@@ -43,7 +44,7 @@ fn file_writer(rx : mpsc::Receiver<String>) {
         if let Ok(msg) = rx.recv_timeout(timeout) {
             file.write_all( msg.as_bytes() ).unwrap();
             file.write_all( b"\n" ).unwrap();
-            file.sync_data().unwrap();
+            // file.sync_data().unwrap();
         }
         else {
             println!("[{:.6}] Timeout from file-writer thread.", timer.elapsed().as_secs_f32());
@@ -83,8 +84,9 @@ fn main() {
             }
         };
         let datum = format!("{} | {} | {}", io1, io2, gps_msg);
-        w_tx.send(datum).unwrap();
-        break;
+        if let Err(_) = w_tx.send(datum) {
+            break;
+        }
     }
 
     //cleanup
