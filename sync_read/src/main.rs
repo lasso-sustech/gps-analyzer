@@ -1,9 +1,9 @@
 use std::{thread, time};
 use std::sync::{mpsc,};
-use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
 //
+use glob::glob;
 use rppal::gpio::Gpio;
 use serialport;
 
@@ -34,11 +34,15 @@ fn gps_recv(tx : mpsc::Sender<String>) {
 
 fn file_writer(rx : mpsc::Receiver<String>) {
     let timer = time::Instant::now();
-    let count = Path::new("./logs/").iter().count();
-    println!("{}", count);
-    let file_name = format!("./logs/gps-{:02}.log", count);
-    let mut file = File::create(file_name).unwrap();
     let timeout = time::Duration::from_millis(1000);
+
+    // create logs folder
+    std::fs::create_dir("logs").unwrap_or(());
+    let count = glob("logs/*.log").unwrap().count();
+    println!("{}", count);
+    // open file
+    let file_name = format!("logs/gps-{:02}.log", count);
+    let mut file = File::create(file_name).unwrap();
 
     loop {
         if let Ok(msg) = rx.recv_timeout(timeout) {
@@ -72,8 +76,10 @@ fn main() {
 
     // main timer loop
     let time_step = time::Duration::from_millis(PACE);
+    let spin_sleeper = spin_sleep::SpinSleeper::new(100_000);
     loop {
-        thread::sleep(time_step);
+        spin_sleeper.sleep(time_step);
+        // thread::sleep(time_step);
         let io1 = pin1.read() as u8;
         let io2 = pin2.read() as u8;
         let gps_msg = {
