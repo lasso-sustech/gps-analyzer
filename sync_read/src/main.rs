@@ -13,7 +13,8 @@ const PACE:u64 = 1; //1 millisecond
 
 fn gps_recv(tx : mpsc::Sender<String>) {
     let timer = time::Instant::now();
-    let mut serial_buf: Vec<u8> = vec![0; 1024];
+    let mut serial_buf: Vec<u8> = vec![0; 256];
+    let mut buf: Vec<u8> = vec![0; 1024];
 
     // let ports = serialport::available_ports().expect("No ports found!");
     // let port = ports[0].port_name.clone();
@@ -23,8 +24,13 @@ fn gps_recv(tx : mpsc::Sender<String>) {
     
     loop {
         if let Ok(size) = port.read( serial_buf.as_mut_slice() ) {
-            if let Ok(msg) = String::from_utf8( serial_buf[..size].to_vec() ) {
-                tx.send(msg).unwrap();
+            buf.extend( serial_buf[..size].iter().copied() );
+            if let Some(pos) = buf.iter().position( |&x| x == '\n' as u8 ) {
+                let msg:Vec<u8> = buf.drain(..pos).collect();
+                buf.remove(0); //remove remaining '\n'
+                if let Ok(msg) = String::from_utf8(msg) {
+                    tx.send(msg).unwrap();
+                }
             }
         }
         else {
@@ -47,8 +53,9 @@ fn file_writer(rx : mpsc::Receiver<String>) {
 
     loop {
         if let Ok(msg) = rx.recv_timeout(timeout) {
-            file.write_all( msg.as_bytes() ).unwrap();
-            file.write_all( b"\n" ).unwrap();
+            writeln!(file, "{}", msg);
+            // file.write_all( msg.as_bytes() ).unwrap();
+            // file.write_all( b"\n" ).unwrap();
             // file.sync_data().unwrap();
         }
         else {
@@ -122,7 +129,7 @@ fn gps_read() {
 
     let ports = serialport::available_ports().expect("No ports found!");
     let port = ports[0].port_name.clone();
-    let mut port = serialport::new(port, 115_200)
+    let mut port = serialport::new(port, 38_400)
             .timeout(time::Duration::from_millis(1000))
             .open().expect("Failed to open port");
     
