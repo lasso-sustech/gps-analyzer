@@ -28,7 +28,8 @@ fn gps_recv(tx : mpsc::Sender<String>) {
             if let Some(pos) = buf.iter().position( |&x| x == '\n' as u8 ) {
                 let msg:Vec<u8> = buf.drain(..pos).collect();
                 buf.remove(0); //remove remaining '\n'
-                if let Ok(msg) = String::from_utf8(msg) {
+                if let Ok(mut msg) = String::from_utf8(msg) {
+                    msg.retain( |c| !c.is_ascii_control() );
                     tx.send(msg).unwrap();
                 }
             }
@@ -53,7 +54,7 @@ fn file_writer(rx : mpsc::Receiver<String>) {
 
     loop {
         if let Ok(msg) = rx.recv_timeout(timeout) {
-            writeln!(file, "{}", msg);
+            writeln!(file, "{}", msg).unwrap_or(());
             // file.write_all( msg.as_bytes() ).unwrap();
             // file.write_all( b"\n" ).unwrap();
             // file.sync_data().unwrap();
