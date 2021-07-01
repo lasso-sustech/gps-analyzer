@@ -17,14 +17,15 @@ fn gps_recv(tx : mpsc::Sender<String>) {
 
     // let ports = serialport::available_ports().expect("No ports found!");
     // let port = ports[0].port_name.clone();
-    let mut port = serialport::new("/dev/ttyUSB0", 115_200)
+    let mut port = serialport::new("/dev/ttyUSB0", 38_400)
             .timeout(time::Duration::from_millis(1000))
             .open().expect("Failed to open port");
     
     loop {
-        if let Ok(_) = port.read( serial_buf.as_mut_slice() ) {
-            let msg = String::from_utf8( serial_buf.clone() ).unwrap();
-            tx.send(msg).unwrap();
+        if let Ok(size) = port.read( serial_buf.as_mut_slice() ) {
+            if let Ok(msg) = String::from_utf8( serial_buf[..size].to_vec() ) {
+                tx.send(msg).unwrap();
+            }
         }
         else {
             println!("[{:.6}] Timeout from GPS thread.", timer.elapsed().as_secs_f32());
